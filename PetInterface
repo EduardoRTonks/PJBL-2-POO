@@ -152,7 +152,6 @@ public class PetInterface extends JFrame {
             add(new JLabel("Nome"));
             nome = new JTextField("", 35);
             add(nome);
-            add(new JLabel("                                      "));
             add(new JLabel("Data de nasc.(dd/mm/aaaa)"));
             dia = new JTextField(2);
             add(dia);
@@ -223,6 +222,7 @@ public class PetInterface extends JFrame {
             add(new JLabel("Tipo:"));
             tipoPet = new JTextField("", 20);
             add(tipoPet);
+            add(new JLabel("                                      "));
             add(new JLabel("Data de nasc.(dd/mm/aaaa)"));
             dia = new JTextField(2);
             add(dia);
