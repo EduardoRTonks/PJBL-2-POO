@@ -3,9 +3,7 @@ import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.image.BufferedImage;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -16,10 +14,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import java.util.ArrayList;
 import java.util.Scanner;
-import javax.imageio.ImageIO;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -254,7 +250,7 @@ public class PetInterface extends JFrame{
          add(mes);add(new JLabel("/")); // Adiciona campo de texto + "/" ao frame.
          ano=new JTextField(4); // Cria campo de texto.
          add(ano); // Adiciona campo de texto ao frame.
-         add(new JLabel("\n\n"));
+         add(new JLabel("                                             "));
          add(new JLabel("Endereço"));
          ender=new JTextField("",40);
          add(ender);
@@ -280,15 +276,22 @@ public class PetInterface extends JFrame{
             catch(Exception ex) { // Trata entrada de n�o inteiro.
                JOptionPane.showMessageDialog(PetInterface.this, 
                   "Todos os campos de data devem ser num�ricos!");
-               return;
+               return;                       
             }
-            try{  // Tenta convers�o para data: verifica A, M e D.
-               // Se A, M ou D n�o forem v�lidos, uma exce��o � lan�ada.
-               LocalDate dataNasc=LocalDate.of(A,M,D);
-            }
-            catch(Exception ex){ // Avisa qual o problema de convers�o.
-               JOptionPane.showMessageDialog(PetInterface.this,ex.toString());
-               return;           
+            try {
+                // Valida a data usando seu método personalizado antes de usar LocalDate.of
+                if (!Tutor.valiData(D, M, A)) {
+                    JOptionPane.showMessageDialog(PetInterface.this, "Os campos de data devem conter uma data válida!");
+                    return; // Sai se a data não for válida
+                }
+
+                // Apenas agora tenta criar o LocalDate
+                LocalDate dataNasc = LocalDate.of(A, M, D);
+                // A data foi validada e é válida
+            } catch (Exception ex) {
+                // Trata qualquer exceção lançada por LocalDate.of (embora seja improvável depois da validação)
+                JOptionPane.showMessageDialog(PetInterface.this, ex.toString());
+                return;
             }
             /* Ap�s valida��es, inicia a grava��o. */                       
             // Gera o c�digo da pessoa usando m�todo geraCod().
@@ -296,7 +299,7 @@ public class PetInterface extends JFrame{
             Tutor novotutor = new Tutor(n,D,M,A,l,geraCodCont());
             cadastrarPetFrame pf = new cadastrarPetFrame(novotutor);
             pf.setTitle("Cadastro de Pet");
-            pf.setSize(400, 300); // Ajuste o tamanho conforme necessário
+            pf.setSize(500, 200); // Ajuste o tamanho conforme necessário
             pf.setLocationRelativeTo(null);
             pf.setVisible(true);
             tutor.add(novotutor);           
@@ -324,7 +327,7 @@ public class PetInterface extends JFrame{
     	        add(new JLabel("Tipo:"));
     	        tipoPet = new JTextField("", 20);
     	        add(tipoPet);
-
+    	        add(new JLabel("                                      "));
     	        add(new JLabel("Data de nasc.(dd/mm/aaaa)"));
     	        dia=new JTextField(2); // Cria campo de texto.    
     	        add(dia);add(new JLabel("/")); // Adiciona campo de texto  + "/"  ao frame.
@@ -362,18 +365,26 @@ public class PetInterface extends JFrame{
     	                  "Todos os campos de data devem ser num�ricos!");
     	               return;
     	            }
-    	            try{  // Tenta convers�o para data: verifica A, M e D.
-    	               // Se A, M ou D n�o forem v�lidos, uma exce��o � lan�ada.
-    	               LocalDate dataNasc=LocalDate.of(A,M,D);
-    	            }
-    	            catch(Exception ex){ // Avisa qual o problema de convers�o.
-    	               JOptionPane.showMessageDialog(PetInterface.this,ex.toString());
-    	               return;           
+    	            try {
+    	                // Valida a data usando seu método personalizado antes de usar LocalDate.of
+    	                if (!Tutor.valiData(D, M, A)) {
+    	                    JOptionPane.showMessageDialog(PetInterface.this, "Os campos de data devem conter uma data válida!");
+    	                    return; // Sai se a data não for válida
+    	                }
+
+    	                // Apenas agora tenta criar o LocalDate
+    	                LocalDate dataNasc = LocalDate.of(A, M, D);
+    	                // A data foi validada e é válida
+    	            } catch (Exception ex) {
+    	                // Trata qualquer exceção lançada por LocalDate.of (embora seja improvável depois da validação)
+    	                JOptionPane.showMessageDialog(PetInterface.this, ex.toString());
+    	                return;
     	            }
 
 
     	            // Cria o objeto Pet (substitua conforme sua implementação)
     	            novotutor.incluiPet(petName, petTipo, D, M, A); // Exemplo: altere se precisar
+    	            salvarCadastro();
     	            String msg = String.format("Pet cadastrado: %s - %s.", petTipo, petName);
     	            JOptionPane.showMessageDialog(this, msg);
     	            writeLog(msg);
