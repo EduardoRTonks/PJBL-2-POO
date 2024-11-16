@@ -1,6 +1,7 @@
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 
 public class Pet implements Serializable {
 	// Atributos da classe
@@ -24,6 +25,11 @@ public class Pet implements Serializable {
 	public String getTipoPet() {
 		return tipoPet;
 	}
+    public String getDataNascPet() {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return dataNascimento.format(fmt);
+    }
+
 
 	// Calcula a idade do pet
 	public int getIdade() {
@@ -32,9 +38,9 @@ public class Pet implements Serializable {
 
 	// Método para imprimir os detalhes do pet, incluindo a idade
 	public String toString() {
-		return "    Nome do Pet: " + nomePet + "; " +
-				"Tipo do Pet: " + tipoPet + "; " +
-				"Data de Nascimento: " + dataNascimento +
-				"( "+ getIdade() + " anos). \n";
+		return "    Nome do Pet: " + getNomePet()+ "; " +
+				"Tipo do Pet: " + getTipoPet() + "; " +
+				"Data de Nascimento: " + getDataNascPet()+
+				" ("+ getIdade() + " anos). \n";
 	}
 }

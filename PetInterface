@@ -1,0 +1,613 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+// *** Lista (alfab�tica) de objetos importados (para data) ****************
+import java.time.LocalDate;
+
+
+
+public class PetInterface extends JFrame{
+	
+	static Scanner leitor = new Scanner (System.in);
+	private int largura,altura; // Isso vamos receber da main
+   
+   private JButton button; // Bot�o apenas com texto: para gerar os v�rios bot�es.
+   
+   private static JTextArea logArea=new JTextArea("",15,66); // Area de log.
+   // JTextArea(<texto>,<altura~n�mero de linhas>,<largura-n�mero de caracteres>).
+   
+   
+   static int sizeLog=0; // Contador de mensagens do log.
+   
+   private static String FILE_NAME="tutores.dat"; // O arquivo de dados.
+   
+   // ArrayList para manter o banco de dados na mem�ria.
+   
+   private static ArrayList<Tutor> tutor=new ArrayList<Tutor>();
+   
+   
+   // Essas vari�veis foram declaradas aqui para permitir acesso pelo respectivo
+   // ouvinte de enventos durante o cadastro para limpar o formul�rio do painel
+   // para o cadastramento seguinte. 
+   
+   private JTextField nome, dia, mes, ano, ender;
+   // Lista de op��es disponibilizdas pelo aplicativo.  
+   
+   
+   private static final String[] option={"Cadastrar Tutor/Pets", "Imprimir Cadastro",
+      "Buscar Por Código","Excluir Tutor/Pets","Encerrar"};
+   
+   public static void carregarCadastro() {
+	    FileInputStream fileIn = null;
+	    ObjectInputStream objIn = null;
+	    try {
+	        fileIn = new FileInputStream(FILE_NAME); // Abre o arquivo
+	        objIn = new ObjectInputStream(fileIn); // Converte para objeto
+	        try {
+	            tutor = (ArrayList<Tutor>) objIn.readObject(); // Lê o ArrayList de tutores
+	            writeLog("Dados carregados com sucesso!");
+	        } catch (EOFException e) {
+	            // Tratamento quando o final do arquivo for atingido
+	        	 writeLog("Fim da leitura do arquivo "+FILE_NAME+".");
+	        }
+	    } catch (FileNotFoundException e) {
+	    	writeLog("Arquivo de dados não encontrado. Um novo arquivo será criado!");
+	    	salvarCadastro();
+	        tutor = new ArrayList<>(); // Inicializa uma nova lista vazia de tutores
+	    } catch (IOException | ClassNotFoundException e) {
+	        writeLog("Erro ao carregar dados: " + e.getMessage());
+	    } finally {
+	        try {
+	            if (objIn != null) objIn.close(); // Fecha o ObjectInputStream
+	            if (fileIn != null) fileIn.close(); // Fecha o FileInputStream
+	        } catch (IOException e) {
+	            writeLog("Erro ao fechar o arquivo de leitura: " + e.getMessage());
+	        }
+	    }
+	}
+	public static void salvarCadastro() {
+		FileOutputStream fileOut = null;
+		ObjectOutputStream objOut = null;
+
+		try {
+			fileOut = new FileOutputStream(FILE_NAME); // Abre ou cria o arquivo
+			objOut = new ObjectOutputStream(fileOut); // Converte para objeto
+			objOut.writeObject(tutor); // Grava o ArrayList de tutores
+		} catch (IOException e) {
+			writeLog("Erro ao salvar dados: " + e.getMessage());
+		} finally {
+			try {
+				if (objOut != null) objOut.close(); // Fecha o ObjectOutputStream
+				if (fileOut != null) fileOut.close(); // Fecha o FileOutputStream
+			} catch (IOException e) {
+				writeLog("Erro ao fechar o arquivo de gravação: " + e.getMessage());
+			}
+		}
+	}
+
+	// Método para obter o nome do tutor
+
+      // Esse m�todo retorna o n�mero de pessoas (tamanho do arquivo).
+   // Define a fonte padr�o dos objetos JTextArea.
+   static Font f=new Font("Consolas", Font.PLAIN, 13);  
+   
+   
+   
+	public static int geraCodCont(){ // Gera código p/ contribuinte. // CREIO EU QUE DE PRA REUTILIZAR TUDO ISSO AI PRO CONTADOR :P
+		 if (tutor.size()==0)
+			 return 1;
+		 else // Incrementa o código do contribuinte no final da lista.
+			 return tutor.get(tutor.size()-1).getCod()+1;
+	}  
+    
+   // *** Cria��o da interface do aplicativo *******************************
+   public PetInterface(int largura, int altura){ 
+      // PessoaInterface adiciona componentes ao JFrame.
+      super("CADASTRO DE TUTORES"); // T�tulo do JFrame.
+      // O Frame � apenas uma moldura com t�tulo.
+      this.largura=largura; this.altura=altura; // Largura e altura do painel.
+      
+      setLayout(new FlowLayout()); 
+      // FlowLayout() Define organiza��o autom�tica dos componentes no JFRame.
+      
+      JPanel painel=new JPanel(); // Cria o painel que conter� os elementos da interface.
+      // Um JPanel pode conter Jbutton, JLabel, Box, outro JPanel etc.
+      // � no JPanel que a interface � definida.  
+      
+      painel.setPreferredSize(new Dimension(largura,altura)); // Dimens�es do painel.
+      add(painel); // Adiciona o painel ao JFrame.
+      pack(); // Ajusta o JFrame para conter o painel.
+
+     
+      
+      
+      
+     // BufferedImage imgDecor=null; // Vari�vel para guardar imagem decorativa no buffer. ////////// EUUU ACHO QUE ISSO NÃO PRECISA      
+     // try{ // Obten��o da imagem a ser utilizada no painel decorativo.
+       ///  File file = new File("pessoas.jpg"); // Arquivo de imagem (na pasta do aplicativo). 
+        // FileInputStream fis = new FileInputStream(file); // Cria o fluxo de entrada.
+         //imgDecor=ImageIO.read(fis); // L� imagem do arquivo, colocando na mem�ria (buffer).
+     // } catch (IOException ex) {
+      //   ex.printStackTrace(); // Caso haja problema.
+     // }
+      
+      
+      
+      
+      
+      
+      // Cria novo objeto ButtonHandler para o tratamento dos eventos de bot�o (o "clicar")
+      // para os tr�s primeiros bot�es.
+      ButtonHandler handler=new ButtonHandler(); // ButtonHandler � definido mais abaixo.
+      for(int k=0;k<5;k++){ 
+         button=new JButton(option[k]); // Cria novo bot�o.
+         painel.add(button); // Adiciona os bot�es (plainJButtons) ao JFrame.
+         if(k!=4) // Adiciona o respectivo ouvinte de eventos aos tr�s primeiros
+            button.addActionListener(handler); 
+      }  
+      
+      
+      // Para o �ltimo bot�o criado acima (para Encerrar), deve-se fechar a 
+      // janela e o aplicativo. Usa a forma abaixo para adicionar o ouvinte.
+      button.addActionListener(e->{ // Nota��o lambda para ouvinte de evento.
+         PetInterface.this.dispose(); // Fecha janela.
+         System.exit(0); // Fecha aplicativo.
+      });
+      
+      // Cria uma caixa para listar todas as a��es executadas durante a sess�o de
+      // uso do aplicativo, LOG (necess�rio o uso do m�todo writeLog() ao fim das 
+      // a��es executadas).
+      painel.add(new JLabel("        "));
+      painel.add(new JLabel("                Log de ações realizadas na sessão.                ")); // T�tulo da caixa
+      Box box = Box.createHorizontalBox(); // Cria uma caixa.
+      logArea.setFont(f); // Define a fonte da �rea de log.
+      logArea.setEditable(false); // Trava a edi��o dessa �rea.
+      box.add(new JScrollPane(logArea)); // Insere a �rea de log num painel com rolamento.
+      painel.add(box); // Adiciona a caixa ao painel.
+   }
+   // Classe interna para tratamento de evento de bot�o
+   private class ButtonHandler implements ActionListener{
+      // O m�todo actionPerformed trata os eventos de bot�o.
+      @Override
+      public void actionPerformed(ActionEvent event){
+         if(event.getActionCommand()==option[0]){ 
+            cadastrar();
+            salvarCadastro();// Chama m�todo para cadastramento.
+         } 
+         if(event.getActionCommand()==option[1]){
+        	imprimir(); // Chama m�todo para impress�o.
+         }          
+         if(event.getActionCommand()==option[2]){
+        	 buscar(); // Chama m�todo para busca.
+         }
+         if(event.getActionCommand()==option[3]){
+             excluir();
+             salvarCadastro();// Chama m�todo para busca.
+          }
+      }
+   }
+   // M�todo para escrever na �rea de log.
+   public static void writeLog(String s){ 
+	   if (sizeLog==0) { // Aviso de cria��o do log.
+    	  	logArea.append("LOG CRIADO...");
+      		logArea.append("\n");
+      		logArea.append("- "+s);
+   		}else{ // Adi��o de novas a��es.
+    	  logArea.append("\n");
+         logArea.append("- "+s);
+      }    
+      sizeLog++;    
+   }
+   // *** Cadastramento ****************************************************
+   private void cadastrar(){ // Usa um objeto cadastrarFrame (abaixo).
+      // Cria o frame para cadastramento.
+      cadastrarFrame cf=new cadastrarFrame();
+      // Ao sair, o frame fica apenas invis�vel.
+      cf.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+      // Define o tamanho do frame.
+      cf.setSize(largura-0, 200);
+      // Centraliza o frame na tela.
+      cf.setLocationRelativeTo(null);
+      // Deixa o frame criado vis�vel para o cadastramento.
+      cf.setVisible(true);
+   }
+   private class cadastrarFrame extends JFrame{
+      // Para sai do Frame e encerrar o cadastramento, clicar em [X], 
+      // no topo � direita.
+      private JButton ok; // Bot�o para efetuar o cadastro.
+      public cadastrarFrame(){
+    	  super("Cadastro Tutor");
+         // Define layout flutuante com alinhamento �s esquerda.
+         setLayout(new FlowLayout(FlowLayout.LEADING));
+         add(new JLabel("Nome")); // Adiciona label ao frame.
+         nome=new JTextField("",35); // Cria campo de texto.
+         add(nome); // Adiciona campo de texto ao frame.
+         add(new JLabel("Data de nasc.(dd/mm/aaaa)"));
+         dia=new JTextField(2); // Cria campo de texto.        
+         add(dia);add(new JLabel("/")); // Adiciona campo de texto  + "/"  ao frame.
+         mes=new JTextField(2); // Cria campo de texto.
+         add(mes);add(new JLabel("/")); // Adiciona campo de texto + "/" ao frame.
+         ano=new JTextField(4); // Cria campo de texto.
+         add(ano); // Adiciona campo de texto ao frame.
+         add(new JLabel("                                             "));
+         add(new JLabel("Endereço"));
+         ender=new JTextField("",40);
+         add(ender);
+         ok=new JButton("Cadastrar"); // Adiciona bot�o p/ cadastrar ao frame.
+         add(ok); // Adiciona o bot�o ao frame.
+         // Cria um ouvinte de evento para o bot�o de cadastramento: o evento � o 
+         // clicar sobre o bot�o: se todos fornecidos, os dados s�o gravados.
+         ok.addActionListener(e->{ // Nota��o lambda para incluir ouvinte de evento.
+            // Define vari�veis contendo os conte�dos de cada campo de texto.
+            String n=nome.getText(),d=dia.getText(),m=mes.getText(),a=ano.getText(), l=ender.getText();
+            int D=0,M=0,A=0; // Vari�veis para convers�o string-> int.
+            // Verifica se todos os campos foram prenchidos (mas n�o se corretamente).
+            if(n.length()==0||d.length()==0||m.length()==0||a.length()==0 || l.length()==0){
+               JOptionPane.showMessageDialog(PetInterface.this, 
+                  "Todos os campos devem ser preenchidos!"); // Avisa de n�o preenchimento.
+               return;
+            }
+            try{  
+               D=Integer.parseInt(d); // Integer.parseInt('2') converte '2' para 2.
+               M=Integer.parseInt(m);
+               A=Integer.parseInt(a);
+            }
+            catch(Exception ex) { // Trata entrada de n�o inteiro.
+               JOptionPane.showMessageDialog(PetInterface.this, 
+                  "Todos os campos de data devem ser num�ricos!");
+               return;                       
+            }
+            try {
+                // Valida a data usando seu método personalizado antes de usar LocalDate.of
+                if (!Tutor.valiData(D, M, A)) {
+                    JOptionPane.showMessageDialog(PetInterface.this, "Os campos de data devem conter uma data válida!");
+                    return; // Sai se a data não for válida
+                }
+
+                // Apenas agora tenta criar o LocalDate
+                LocalDate dataNasc = LocalDate.of(A, M, D);
+                // A data foi validada e é válida
+            } catch (Exception ex) {
+                // Trata qualquer exceção lançada por LocalDate.of (embora seja improvável depois da validação)
+                JOptionPane.showMessageDialog(PetInterface.this, ex.toString());
+                return;
+            }
+            /* Ap�s valida��es, inicia a grava��o. */                       
+            // Gera o c�digo da pessoa usando m�todo geraCod().
+            // Cria um objeto Basso e adiciona ao ArrayList pessoas.
+            Tutor novotutor = new Tutor(n,D,M,A,l,geraCodCont());
+            cadastrarPetFrame pf = new cadastrarPetFrame(novotutor);
+            pf.setTitle("Cadastro de Pet");
+            pf.setSize(500, 200); // Ajuste o tamanho conforme necessário
+            pf.setLocationRelativeTo(null);
+            pf.setVisible(true);
+            tutor.add(novotutor);           
+            // Gera a mensagem de sucesso a ser exibida por janela e escrita no log.
+            String msg=String.format("Cadastrado: "+n+" ("+d+"/"+m+"/"+a+") "+l+".");
+            // Mostra a janela indicand sucesso do cadastro e escreve no log de a��es.
+            JOptionPane.showMessageDialog(PetInterface.this,msg);
+            writeLog(msg);
+            salvarCadastro();
+            // Apaga o conte�do de todos os campos para um novo cadastramento.
+            nome.setText(""); dia.setText(""); mes.setText(""); ano.setText(""); ender.setText("");          
+         });  
+      }
+      private class cadastrarPetFrame extends JFrame {
+    	    private JButton ok;
+    	    private JTextField nomePet, tipoPet, dia, mes, ano;
+    	    
+
+    	    public cadastrarPetFrame(Tutor novotutor) {
+    	        setLayout(new FlowLayout(FlowLayout.LEADING));
+    	        add(new JLabel("Nome do Pet:"));
+    	        nomePet = new JTextField("", 35);
+    	        add(nomePet);
+
+    	        add(new JLabel("Tipo:"));
+    	        tipoPet = new JTextField("", 20);
+    	        add(tipoPet);
+    	        add(new JLabel("                                      "));
+    	        add(new JLabel("Data de nasc.(dd/mm/aaaa)"));
+    	        dia=new JTextField(2); // Cria campo de texto.    
+    	        add(dia);add(new JLabel("/")); // Adiciona campo de texto  + "/"  ao frame.
+    	        
+    	        mes=new JTextField(2); // Cria campo de texto.
+    	        add(mes);add(new JLabel("/")); // Adiciona campo de texto + "/" ao frame.
+    	         
+    	        ano=new JTextField(4); // Cria campo de texto.
+    	        add(ano);
+
+    	        ok = new JButton("Cadastrar Pet");   	      
+
+    	        add(ok);
+
+    	        // Ação para cadastrar um pet
+
+    	        // Ação para cadastrar mais um pet
+    	        ok.addActionListener(e -> {
+    	            String petName = nomePet.getText(), petTipo = tipoPet.getText(),d=dia.getText(),m=mes.getText(),a=ano.getText();
+
+    	            int D=0,M=0,A=0; // Vari�veis para convers�o string-> int.
+    	            // Verifica se todos os campos foram prenchidos (mas n�o se corretamente).
+    	            if(petName.length()==0||d.length()==0||m.length()==0||a.length()==0 || petTipo.length()==0){
+    	               JOptionPane.showMessageDialog(PetInterface.this, 
+    	                  "Todos os campos devem ser preenchidos!"); // Avisa de n�o preenchimento.
+    	               return;
+    	            }
+    	            try{  
+    	               D=Integer.parseInt(d); // Integer.parseInt('2') converte '2' para 2.
+    	               M=Integer.parseInt(m);
+    	               A=Integer.parseInt(a);
+    	            }
+    	            catch(Exception ex) { // Trata entrada de n�o inteiro.
+    	               JOptionPane.showMessageDialog(PetInterface.this, 
+    	                  "Todos os campos de data devem ser num�ricos!");
+    	               return;
+    	            }
+    	            try {
+    	                // Valida a data usando seu método personalizado antes de usar LocalDate.of
+    	                if (!Tutor.valiData(D, M, A)) {
+    	                    JOptionPane.showMessageDialog(PetInterface.this, "Os campos de data devem conter uma data válida!");
+    	                    return; // Sai se a data não for válida
+    	                }
+
+    	                // Apenas agora tenta criar o LocalDate
+    	                LocalDate dataNasc = LocalDate.of(A, M, D);
+    	                // A data foi validada e é válida
+    	            } catch (Exception ex) {
+    	                // Trata qualquer exceção lançada por LocalDate.of (embora seja improvável depois da validação)
+    	                JOptionPane.showMessageDialog(PetInterface.this, ex.toString());
+    	                return;
+    	            }
+
+
+    	            // Cria o objeto Pet (substitua conforme sua implementação)
+    	            novotutor.incluiPet(petName, petTipo, D, M, A); // Exemplo: altere se precisar
+    	            salvarCadastro();
+    	            String msg = String.format("Pet cadastrado: %s - %s.", petTipo, petName);
+    	            JOptionPane.showMessageDialog(this, msg);
+    	            writeLog(msg);
+
+    	            // Limpa os campos para o próximo cadastro
+    	            nomePet.setText("");
+    	            tipoPet.setText("");
+    	            dia.setText("");
+    	            mes.setText("");
+    	            ano.setText("");
+    	        });
+    	    }
+    	} 
+
+   }
+   public void imprimir(){ // Imprime pessoas usando .toString().
+       impTutoresFrame it=new impTutoresFrame();
+       // Define que, ao se fechar a janela, ela fica oculta sem encerrar o programa.
+       it.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+       // Define o tamamho
+       it.setSize(largura-45,215);
+       it.setLocationRelativeTo(null);
+       it.setVisible(true); // Torna o JFrame vis�vel.     
+    } 
+   private class impTutoresFrame extends JFrame{ // Cadastro de pessoas para impress�o.
+   private static JTextArea cadArea=new JTextArea("",10,61);
+   public impTutoresFrame(){
+        super("CADASTRO DE TUTORES E PETS");
+        cadArea.setText(""); // Limpa para evitar repeti��o.
+        cadArea.setEditable(false); // Trava a edi��o.
+        cadArea.setFont(f); // Define a fonte da �rea de impress�o.
+        setLayout(new FlowLayout(FlowLayout.LEADING)); // Layout autom�tico:
+           // o JFrame ajsuta automaticamente os componentes inseridos.
+        Box box = Box.createHorizontalBox(); // Caixa para �rea de impress�o.
+        box.add(new JScrollPane(cadArea));  // Adiciona �rea de impress�o � caixa
+           // como um painel com rolamento (para cadastros maiores).
+        add(box); // Adiciona a caixa ao JFrame.
+        if (tutor.size()>0){ // Se cadastro n�o vazio...
+           // Cabe�alho da impress�o.
+           cadArea.append("--- TUTORES E PETS CADASTRADOS-----------------------------\n");
+           // Itera��o sobre os objetos do arquivo/ArrayList para impress�o.
+           for(Tutor t:tutor)
+              cadArea.append(t.toString()+"\n\n"); 
+           writeLog("Cadastro impresso."); // Registro no log. 
+        }
+        else { // Avisa de cadastro vazio.
+           cadArea.append("Cadastro vazio.");
+           writeLog("Cadastro Vazio.");
+        }   
+     }
+   }
+   public void buscar() {   
+	   if (tutor.size() == 0) {
+		   String msg = "Não existem tutores cadastrados.";
+		   JOptionPane.showMessageDialog(PetInterface.this, msg);
+		   writeLog(msg);
+		   return; // Não prossegue se não houver tutores
+	   }else {
+	   // Cria o frame para cadastramento.
+		   	buscarFrame bf=new buscarFrame();
+	   // Ao sair, o frame fica apenas invis�vel.
+	   		bf.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+	   // Define o tamanho do frame.
+	   		bf.setSize(largura-0, 200);
+	   	// Centraliza o frame na tela.
+	   		bf.setLocationRelativeTo(null);
+	   		// Deixa o frame criado vis�vel para o cadastramento.
+	   		bf.setVisible(true);
+	   }
+}
+   private class buscarFrame extends JFrame {
+	    private JTextField cod; // Campo de texto para o código do tutor
+	    private JTextArea cadArea; // Área de texto para exibição de dados
+	    private JButton ok; // Botão para buscar tutor
+
+	    public buscarFrame() {
+	    	super("Buscar Tutor");
+	        // Define layout inicial
+	        // Verifica se há tutores cadastrados
+	        // Adiciona campo e botão para buscar tutor
+	    	setLayout(new FlowLayout(FlowLayout.LEADING));
+ 
+	         add(new JLabel("Cód.:")); // Adiciona label ao frame.
+	         cod=new JTextField(5); // Cria campo de texto.v
+	         add(cod);
+
+	        ok = new JButton("Buscar");
+	        add(ok);
+	        // Define ação para o botão "Concluir"
+	        cadArea = new JTextArea(8, 25); // Definindo o tamanho da área de texto
+	        cadArea.setEditable(false);       // Torna a área de texto somente lei 	
+	        add(new JScrollPane(cadArea));    // Colocando cadArea dentro de um JScrollPane para rolagem
+	        ok.addActionListener(e -> {
+	            cadArea.setText(""); 
+	            String c = cod.getText();
+
+	            // Verifica se o campo foi preenchido
+	            if (c.length() == 0) {
+	                JOptionPane.showMessageDialog(PetInterface.this, 
+	                        "O campo de código deve ser preenchido!");
+	                return;
+	            }
+
+	            // Converte o código para número
+	            int C;
+	            try {
+	                C = Integer.parseInt(c);
+	            } catch (NumberFormatException ex) {
+	                JOptionPane.showMessageDialog(PetInterface.this, 
+	                        "O campo de código deve ser numérico!");
+	                return;
+	            }
+	            
+
+	            // Busca o tutor no ArrayList
+	            boolean tutorEncontrado = false;
+	            for (Tutor t : tutor) {
+	                if (t.getCod() == C) {
+	                    cadArea.append("Tutor Encontrado: \n"+t.toString());
+	                    writeLog("Tutor Encontrado: \n  "+t.toString());
+	                    tutorEncontrado = true;
+	                }
+	            }
+
+	            // Exibe mensagem se o tutor não for encontrado
+	            if (!tutorEncontrado) {
+	                JOptionPane.showMessageDialog(PetInterface.this, 
+	                        "Nenhum tutor encontrado com esse código!");
+	            } 
+	            cod.setText(""); 
+	        });
+
+	        // Configurações do frame
+	        setSize(600, 400); // Define tamanho do frame
+	        setLocationRelativeTo(null); // Centraliza o frame
+	        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Fecha apenas este frame
+	        setVisible(true); // Torna o frame visível  
+	    }
+	}
+   public void excluir() {
+       if (tutor.size() == 0) {
+            String msg = "Não existem tutores cadastrados.";
+            JOptionPane.showMessageDialog(PetInterface.this, msg);
+            writeLog(msg);
+       }else{
+    	   // Cria o frame para cadastramento.
+    	   	excluirFrame ef=new excluirFrame();
+   	   // Ao sair, o frame fica apenas invis�vel.
+   	   		ef.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+   	   // Define o tamanho do frame.
+   	   		ef.setSize(largura-0, 200);
+   	   // Centraliza o frame na tela.
+   	   		ef.setLocationRelativeTo(null);
+   	   // Deixa o frame criado vis�vel para o cadastramento.
+   	   		ef.setVisible(true);
+       }
+   	}
+   	private class excluirFrame extends JFrame{
+	    private JTextField cod; // Campo de texto para o código do tutor
+	    private JTextArea cadArea;
+	    private JButton ok; // Botão para buscar tutor
+
+	    public excluirFrame() {
+	        super("Excluir Tutor");
+	    	// Verifica se há tutores cadastrados
+	        setLayout(new FlowLayout(FlowLayout.LEADING));
+	        add(new JLabel("Cód.:"));
+	        cod = new JTextField(5);
+	        add(cod);
+
+	        ok = new JButton("Excluir");
+	        add(ok);
+	        
+	        cadArea = new JTextArea(8, 25); // Definindo o tamanho da área de texto
+	        cadArea.setEditable(false);       // Torna a área de texto somente lei 	
+	        add(new JScrollPane(cadArea));    // Colocando cadArea dentro de um JScrollPane para rolagem
+	        ok.addActionListener(e -> {
+	            cadArea.setText(""); 
+	            String c = cod.getText();
+
+	            // Verifica se o campo foi preenchido
+	            if (c.length() == 0) {
+	                JOptionPane.showMessageDialog(PetInterface.this, 
+	                        "O campo de código deve ser preenchido!");
+	                return;
+	            }
+
+	            // Converte o código para número
+	            int C;
+	            try {
+	                C = Integer.parseInt(c);
+	            } catch (NumberFormatException ex) {
+	                JOptionPane.showMessageDialog(PetInterface.this, 
+	                        "O campo de código deve ser numérico!");
+	                return;
+	            }
+	            cod.setText("");
+	            // Busca o tutor no ArrayList
+	            boolean tutorEncontrado = false;
+	            for (Tutor t : tutor) {
+	                if (t.getCod() == C) {	                	
+	                    tutorEncontrado = true;
+	                    tutor.remove(t);
+	                    salvarCadastro();
+	                    cadArea.append("Tutor removido:\n"+t.toString());
+	                    JOptionPane.showMessageDialog(PetInterface.this, 
+		                        "Tutor removido!");	                   
+	                    writeLog("Tutor Removido: \n  "+t.toString());
+	                    tutorEncontrado = true;
+	                    return;
+	                }
+	            }
+	            if (!tutorEncontrado) {	
+	                String msg = "Nenhum tutor encontrado com esse código!";
+	                JOptionPane.showMessageDialog(PetInterface.this, msg);
+	                writeLog(msg);
+	            }
+	        });
+	        // Configurações do frame
+	        setSize(600, 400); // Define tamanho do frame
+	        setLocationRelativeTo(null); // Centraliza o frame
+	        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Fecha apenas este frame
+	        setVisible(true); // Torna o frame visível
+	    }	
+   	}
+}
