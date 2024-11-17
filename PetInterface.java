@@ -3,7 +3,9 @@ import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.image.BufferedImage;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -14,8 +16,10 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import java.util.ArrayList;
 import java.util.Scanner;
+import javax.imageio.ImageIO;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,7 +32,7 @@ public class PetInterface extends JFrame {
     static Scanner leitor = new Scanner(System.in);
     private int largura, altura; // Dimensões da interface
     private JButton button; // Botões das opções
-    private static JTextArea logArea = new JTextArea("", 15, 66); // Área de log das ações
+    private static JTextArea logArea = new JTextArea("", 5, 66); // Área de log das ações
     static int sizeLog = 0; // Contador de ações registradas no log
     private static String FILE_NAME = "tutores.dat"; // Nome do arquivo para persistência
     private static ArrayList<Tutor> tutor = new ArrayList<>(); // Lista de tutores cadastrados
@@ -79,7 +83,14 @@ public class PetInterface extends JFrame {
         painel.setPreferredSize(new Dimension(largura, altura));
         add(painel);
         pack();
-
+        BufferedImage imgDecor=null; // Variável para guardar imagem decorativa no buffer.
+        try{ // Obtenção da imagem a ser utilizada no painel decorativo.
+           File file = new File("cat.jpg"); // Arquivo de imagem (na pasta do aplicativo). 
+           FileInputStream fis = new FileInputStream(file); // Cria o fluxo de entrada.
+           imgDecor=ImageIO.read(fis); // Lê imagem do arquivo, colocando na memória (buffer).
+        } catch (IOException ex) {
+           ex.printStackTrace(); // Caso haja problema.
+        }
         // Adiciona botões do menu
         ButtonHandler handler = new ButtonHandler();
         for (int k = 0; k < 5; k++) {
@@ -103,6 +114,12 @@ public class PetInterface extends JFrame {
         logArea.setEditable(false);
         box.add(new JScrollPane(logArea));
         painel.add(box);
+        // Criação do painel decorativo.
+        JPanel decor=new JPanel(); // Cria o painel que conterá a imagem decorativa.
+        decor.setLayout(new FlowLayout()); // Define layout automático.
+        JLabel imgLabel=new JLabel(new ImageIcon(imgDecor)); // JLabel com imagem.
+        decor.add(imgLabel); // Adicional JLabel com imagem ao painel.
+        painel.add(decor); // Adiciona o outro painel ao painel principal.
     }
 
     // Gerencia ações dos botões
