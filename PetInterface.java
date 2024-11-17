@@ -40,7 +40,7 @@ public class PetInterface extends JFrame {
     private static final String[] option = { "Cadastrar Tutor/Pets", "Imprimir Cadastro",
             "Buscar Por Código", "Excluir Tutor/Pets", "Encerrar" }; // Opções do menu
 
-    // Carrega dados do arquivo para a lista
+    // Carrega dados do arquivo para a listaa
     public static void carregarCadastro() {
         try (FileInputStream fileIn = new FileInputStream(FILE_NAME);
                 ObjectInputStream objIn = new ObjectInputStream(fileIn)) {
@@ -107,8 +107,8 @@ public class PetInterface extends JFrame {
         });
 
         // Área de log
-        painel.add(new JLabel("        "));
-        painel.add(new JLabel("Log de ações realizadas na sessão."));
+        painel.add(new JLabel("                                "));
+        painel.add(new JLabel("                 Log de ações realizadas na sessão.                 "));
         Box box = Box.createHorizontalBox();
         logArea.setFont(new Font("Consolas", Font.PLAIN, 13));
         logArea.setEditable(false);
